@@ -47,7 +47,7 @@ public class Create {
                 "            <div class=\"form-group col-md-6\">\n" +
                 "            <select name = \"inputCodeCourse\">\n"+
                 "                 <option value= 0> Seleccione curso</option>\n";
-        List<Map<String, Object>> cursos = jdbcTemplate.queryForList("SELECT idcursos, nombre_curso FROM monitorias.cursos\n" +
+        List<Map<String, Object>> cursos = jdbcTemplate.queryForList("SELECT idcursos, nombre_curso FROM cursos\n" +
                                               "WHERE estado_curso = 1 and (monitor is null or monitor = 0);");
         for(int i = 0; i < cursos.size();i++){
             html_inyec = html_inyec + "       <option value="+cursos.get(i).get("idcursos").toString()+">"+cursos.get(i).get("nombre_curso").toString()+"</option>\n";
@@ -84,7 +84,7 @@ public class Create {
         return "index";
     }
     public String cursos_disponibles(){
-        List cursos = jdbcTemplate.queryForList("SELECT idcursos, nombre_curso FROM monitorias.cursos\n" +
+        List cursos = jdbcTemplate.queryForList("SELECT idcursos, nombre_curso FROM cursos\n" +
                                               "WHERE estado_curso = 1 and (monitor is null or monitor = 0)");
         System.out.println(cursos);
         return "";
@@ -92,8 +92,8 @@ public class Create {
     
     public boolean validacion_usuario(String codeCarnet, String pass){
         String sql_query = "SELECT count(1) as verificacion\n " +
-                            "FROM monitorias.users_ldap u\n " +
-                            "INNER JOIN monitorias.persona p on p.idpersona = u.id_persona\n " +
+                            "FROM users_ldap u\n " +
+                            "INNER JOIN persona p on p.idpersona = u.id_persona\n " +
                             "WHERE u.contraseña = '"+pass+"'\n "+
                             "AND p.codigo_carnet = "+codeCarnet+";";
         Map validar = jdbcTemplate.queryForMap(sql_query);
@@ -106,12 +106,12 @@ public class Create {
     
     public String validacion_curso(String codeCarnet,String codeCourse){
         Map validar_curso = jdbcTemplate.queryForMap("SELECT if(monitor is null,\"si\",\"no\") as ver \n" +
-                                                    "FROM monitorias.cursos \n" +
+                                                    "FROM cursos \n" +
                                                     "where idcursos="+codeCourse+";");
         if(validar_curso.get("ver").toString().equals("si")){
             Map validar = jdbcTemplate.queryForMap("SELECT p.promedio, p.creditos, p.tipo_pre_pos, if(ct.idcursos is null,'no','si') as ver\n " +
-                                                    "FROM monitorias.persona p\n " +
-                                                    "LEFT JOIN monitorias.cursos_tomados ct on ct.idpersona =p.idpersona\n " +
+                                                    "FROM persona p\n " +
+                                                    "LEFT JOIN cursos_tomados ct on ct.idpersona =p.idpersona\n " +
                                                     "WHERE p.codigo_carnet = "+codeCarnet);
             if (validar.get("ver").equals("si")){
                 if (validar.get("tipo_pre_pos").toString().equals("pregrado")){
@@ -132,8 +132,8 @@ public class Create {
                 }else{
                     if (Float.parseFloat(validar.get("promedio").toString())>4.2){
                         Map validar2 = jdbcTemplate.queryForMap("SELECT count(1) as validar\n " +
-                                                    "FROM monitorias.persona p\n " +
-                                                    "INNER JOIN monitorias.cursos c on c.monitor = p.idpersona\n " +
+                                                    "FROM persona p\n " +
+                                                    "INNER JOIN cursos c on c.monitor = p.idpersona\n " +
                                                     "WHERE p.codigo_carnet = "+codeCarnet);
                         if (validar2.get("validar").toString().equals("0")){
                             return "cumple";
